@@ -3,13 +3,19 @@ console.log('May Node be with you')
 const express = require('express');
 const bodyParser = require('body-parser')
 const app = express();
+const MongoClient = require('mongodb').MongoClient
 
 app.use(bodyParser.urlencoded({extended: true}))
 
 // All your handlers here...
+var db
 
-app.listen(8080, function() {
-    console.log('Listening on 8080')
+MongoClient.connect('mongodb://yoda:yoda@ds153501.mlab.com:53501/star-wars-quotes', (err, database) => {
+    if (err) return console.log(err)
+    db = database
+    app.listen(8080, function() {
+        console.log('Listening on 8080')
+    })
 })
 
 // app.get('/', (req, res) => {
@@ -25,5 +31,13 @@ app.get('/', (req, res) => {
 })
 
 app.post('/quotes', (req, res) => {
-    console.log(req.body)
+    db.collection('quotes').save(req.body, (err, result) =>
+    {
+        if (err) return console.log(err)
+        
+        console.log('saved to database')
+        res.redirect('/')
+    })
+    // console.log(req.body)
 })
+
